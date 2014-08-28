@@ -1,0 +1,44 @@
+function [A bcells] = systemMatrix(dt,v,route_distance)
+%returns the system matrix A and the boundary cells for each route
+
+ %dt = Time step in minutes
+ %v = Aircraft speed in knots
+
+ %changing the speed to nautic miles per minute
+ v = v/60;
+%Matrix creation
+
+%Cells per route. The +1 is for the initial cell. Multiplies the velocite
+%per dt to know the size in miles of each cell
+cell_size = v*dt;
+cells_route = ceil(route_distance/(cell_size)) + 1;
+
+%initialize the system matrix A to 0s
+A = zeros(sum(cells_route));
+%initialize the boundaries cells matrix
+bcells = zeros(size(route_distance),2);
+
+%Create the system matrix A
+for i = 1:size(cells_route,2)
+    
+    %Creates a diagonal matrix of 1s that will append to the correspondent
+    %part of the matrix 
+    D = eye(cells_route(i)-1);
+    size(D);
+
+    
+    %this loop will set the 1s for this route on its proper position at the
+    %System matrix
+    pos = 1;
+    if(i~=1)
+        for j = 1:(i-1)
+           pos = pos + cells_route(j)
+        end
+    end
+    %Adds the 1 at the end of the matrix to accumulate the airplanes at the
+    %destination
+    A(pos+cells_route(i)-1,pos+cells_route(i)-1) = 1;
+    %Puts the 1s matrix into its pertinent place inside the system matrix
+    A(pos+1:pos+cells_route(i)-1,pos:pos+cells_route(i)-2) = D;
+    
+end
